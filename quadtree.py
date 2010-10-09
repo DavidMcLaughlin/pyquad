@@ -74,6 +74,38 @@ class QuadTreeNode(object):
         'hello'
         >>> node.get_node_for_point(Point(1,1))
         ((10,0),(0,10)) -> [hello at (5, 5)]
+        >>> node.get_node_for_point(Point(-1,-1))
+        >>> node.add(Point(1,10), "let's")
+        True
+        >>> node.add(Point(5,8), "cause")
+        True
+        >>> node.add(Point(3,4), "a")
+        True
+        >>> node.add(Point(7,7), "new level")
+        True
+        >>> node.get_node_for_point(Point(1,1))
+        ((5,0),(0,5)) -> [a at (3, 4)]
+        >>> node.add_leaf(QuadTreeLeaf(Point(4,4), "nope"))
+        Traceback (most recent call last):
+            ...
+        Exception: Cannot add an item to a non-leaf node
+        >>> node.get(Point(8,6)).object()
+        'new level'
+        >>> node = QuadTreeNode(Point(0,100), Point(100,0))
+        >>> node.add(Point(50,50), "centre")
+        True
+        >>> node.get(Point(0,0)).object()
+        'centre'
+        >>> len(node.items)
+        1
+        >>> node.add_level()
+        >>> len(node.children)
+        4
+        >>> len(node.items)
+        0
+        >>> node.get_node_for_point(Point(0,70))
+        ((100,0),(50,50)) -> [centre at (50, 50)]
+        
     """
     min_size = 5 # minimum size of a quadrant
     max_size = 4 # maximum number of leaf items per node
@@ -167,8 +199,17 @@ class QuadTreeNode(object):
         self.items = []
     
     def get_node_for_point(self, point):
-        """
+        """ 
             Get the deepest child node where a given point lies
+            
+            For points which live on the borders of child nodes, this algorithm
+            will check NW -> NE -> SW -> SE, so a node with bounds of 100,0 -> 0,100
+            asked to find the following points:
+            
+            (50,50) i.e. the centre point - NW
+            (100,50) i.e middle eastern edge - NE
+            (0,50) i.e. middle western edge - NW
+            (50,100) i.e. middle southern edge - SW
         """
         # if the point lies within the bounds of this node, we
         # need to figure out where to store it
