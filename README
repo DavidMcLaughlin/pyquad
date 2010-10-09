@@ -1,1 +1,16 @@
-A Quad Tree implementation in Python
+A Quad Tree implementation in Python, which provides the ability to quickly find the closest object 
+in the tree to a given point.
+
+   # create a tree representing a 100 square grid
+   tree = QuadTree(Point(0,100), Point(100,0))
+   # add some data
+   for i in xrange(10000):
+       tree.add(Point(random(0,100), randint(0,100)), "value data")
+
+   # get the closest object to the centre
+   print tree.get(Point(50,50)) 
+
+TODO:
+   1) Building the tree is O(n) but each call to add is expensive, so need to optimize
+   2) Rather than maxsize, should just 
+   2) Need to add the ability to search around a point
