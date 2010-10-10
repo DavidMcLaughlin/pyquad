@@ -27,6 +27,13 @@ class QuadTree(object):
         >>> tree.add(Point(49,49), good_result)
         >>> tree.get(Point(50,50))
         'FIND ME'
+        >>> tree = QuadTree(Point(0,10), Point(10,0))
+        >>> for i in xrange(10):
+        ...  tree.add(Point(i,i), "data")
+        ...
+        >>> results = tree.search(Point(5,5), 2)
+        >>> len(results)
+        3
     """
     def __init__(self, nw, se, **kwargs):
         """
@@ -50,7 +57,10 @@ class QuadTree(object):
         if leaf:
              return leaf.object()
         return None
- 
+        
+    def search(self, point, distance):
+        return self.root.range_query(point, distance)
+       
     def __str__(self):
         return "%s" % self.root
 
@@ -83,6 +93,13 @@ class QuadTreeNode(object):
         True
         >>> node.add(Point(7,7), "new level")
         True
+        >>> results = node.range_query(Point(5,5), 10)
+        >>> len(results)
+        5
+        >>> len(node.range_query(Point(5,5), 2))
+        1
+        >>> len(node.range_query(Point(5,5), 3))
+        4
         >>> node.get_node_for_point(Point(1,1))
         ((5,0),(0,5)) -> [a at (3, 4)]
         >>> node.add_leaf(QuadTreeLeaf(Point(4,4), "nope"))
@@ -171,9 +188,34 @@ class QuadTreeNode(object):
                     closest = item
 
         return closest
+    
+    def range_query(self, point, distance):
+        """ 
+            Returns all the items within range of a point
+        """
+        matches = []
+        # check each child node to see if it's within range of our target distance
+        if self.children:
+            for child in self.children:
+                bb_distance = child.bounds.distance_from_point(point)
+                
+                # if this child has items within range, recursively check it
+                if bb_distance <= distance:
+                    results = child.range_query(point, distance)
+                    if len(results) > 0:
+                        matches.extend(results)
+        else:
+            # check each individual item to make sure it's close enough
+            for item in self.items:
+                p_distance = item.point().distance_from(point)
+                if p_distance <= distance:
+                    matches.append(item)
+        
+        return matches 
+                        
                    
     def add_level(self):
-        """
+        """ 
             Splits a tree node into four child nodes
         """
         # don't split if the current node is smaller than the minimum size

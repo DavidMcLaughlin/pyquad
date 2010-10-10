@@ -15,5 +15,4 @@ in the tree to a given point.
 
 TODO:
    1) Building the tree is O(n) but each call to add is expensive, so need to optimize
-   2) Rather than maxsize, should just 
-   2) Need to add the ability to search around a point
+   2) Rather than maxsize and minsize, should base the tree on a depth property
